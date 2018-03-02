@@ -18,8 +18,8 @@ class neuron:
         self.inputs = np.reshape( inputs ,[ len( inputs), 1])
         self.hidden = np.dot( self.weights_ih, self.inputs)
         self.hidden_values = self.sigmoid( self.hidden + self.bias_h)
-        self.outputs =  np.dot( self.weights_ho, self.hidden_values)
-        self.output_values = self.sigmoid( self.outputs + self.bias_o)
+        self.output =  np.dot( self.weights_ho, self.hidden_values)
+        self.output_values = self.sigmoid( self.output + self.bias_o)
         return self.output_values
         
     def train( self, inputs, outputs):
@@ -32,7 +32,7 @@ class neuron:
 
             #Calculate output gradients and deltas
             output_errors = ( target - guess)
-            ho_gradients = np.multiply( self.sigmoid( self.outputs, deriv = True), output_errors)
+            ho_gradients = np.multiply( self.sigmoid( self.output, deriv = True), output_errors)
             ho_gradients = np.multiply( ho_gradients, self.lr)
             ho_deltas = np.dot( ho_gradients, np.transpose(self.hidden_values))
             self.weights_ho += ho_deltas
@@ -40,7 +40,7 @@ class neuron:
         
             #Calculate hidden gradients and deltas
             hidden_errors = np.dot( np.transpose(self.weights_ho), ho_gradients)
-            ih_gradients = self.sigmoid( self.hidden_values, deriv = True)
+            ih_gradients = self.sigmoid( self.hidden, deriv = True)
             ih_gradients = np.multiply( ih_gradients, hidden_errors)
             ih_gradients = np.multiply( ih_gradients, self.lr)
             ih_deltas = np.dot( ih_gradients, np.transpose(inp))
