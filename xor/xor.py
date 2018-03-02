@@ -1,12 +1,32 @@
 from neuron import *
-inputs = [ [ 0, 0],
+'''or_io = [[ [ 0, 0],
            [ 0, 1],
            [ 1, 0],
-           [ 1, 1] ]
-outputs = [ 0,
-            1,
-            1,
-            0 ]
-nn = neuron( 2, 4, 1)
-nn.train( inputs, outputs) 
-print(nn.guess( [int(x) for x in input().split() ] ) )    
+           [ 1, 1]],
+           [ 0,
+             1,
+             1,
+             1   ]]
+and_io = [[[ 0, 0],
+           [ 0, 1],
+           [ 1, 0],
+           [ 1, 1]],
+           [ 0,
+             0,
+             0,
+             1   ]]
+'''
+xor_io = [[[ 0, 0],
+           [ 0, 1],
+           [ 1, 0],
+           [ 1, 1]],
+           [ 0,
+             1,
+             1,
+             0   ]]
+
+nn = NeuralNetwork( 2, 4, 1)
+#uncomment the next line to train 
+#nn.train( xor_io[0], xor_io[1]) 
+print("XOR using Backprop...")
+print( nn.guess( [int(x) for x in input("Inputs...\n").split() ])[0][0] )    
