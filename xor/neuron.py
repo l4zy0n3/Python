@@ -59,7 +59,7 @@ class NeuralNetwork:
             #printing status on the console
             if( i%10000 == 0):
                 print( "******************************************************************************"\
-                "\n\nEpoch #", i)
+                "\n\nIteration #", i)
                 print("\n\tInput -> Hidden Weights\n\t-----------------------\n")
                 pprint.pprint( self.weights_ih)
                 print("\n\tHidden Biases\n\t---------------\n")
