@@ -7,7 +7,7 @@ class NeuralNetwork:
             return (np.tanh(x)) if not deriv else 1-np.tanh(x)*np.tanh(x)
         return (1/(1+np.exp(x))) if not deriv else self.sigmoid(x)*(1-self.sigmoid(x))
     
-    def __init__(self, inp, hid, out, lr = 0.25, epochs = 50000):
+    def __init__(self, inp, hid, out, lr = 0.25, iterations = 50000):
         #for consistent testing
         np.random.seed( int(time.time()))
         #init 
@@ -15,9 +15,9 @@ class NeuralNetwork:
         self.hid = hid
         self.out = out
         self.lr = lr
-        self.epochs = epochs
+        self.iterations = iterations
         #load pretrained weights and biases
-        self.weights_ih = np.load("weights_ih.npy") if path.isfile("weights_ih.npy") else np.random.rand( self.hid, self.inp)
+        self.weights_ih = np.load("weights_ih.npy") if path.isfile("weights_ih.npy") else np.random.rand( self.hid, self.inp);
         self.weights_ho = np.load("weights_ho.npy") if path.isfile("weights_ho.npy") else np.random.rand( self.out, self.hid)
         self.bias_h = np.load( "bias_h.npy") if path.isfile("bias_h.npy") else np.random.rand( self.hid, 1)
         self.bias_o = np.load( "bias_o.npy") if path.isfile("bias_o.npy") else np.random.rand( self.out, 1)
@@ -32,7 +32,7 @@ class NeuralNetwork:
         return self.output_values
         
     def train( self, inputs, outputs):
-        for i in range( 1, self.epochs + 1):
+        for i in range( 1, self.iterations + 1):
             index = np.random.randint(4)
             guess = self.guess( inputs[index])
             inp = np.reshape( inputs[index] ,[ len(inputs[index]), 1])
@@ -59,7 +59,7 @@ class NeuralNetwork:
             #printing status on the console
             if( i%10000 == 0):
                 print( "******************************************************************************"\
-                "\n\nIteration #", i)
+                "\n\niterationsation #", i)
                 print("\n\tInput -> Hidden Weights\n\t-----------------------\n")
                 pprint.pprint( self.weights_ih)
                 print("\n\tHidden Biases\n\t---------------\n")
@@ -71,7 +71,7 @@ class NeuralNetwork:
                 print("\n******************************************************************************\n")
 
             #saving weights and biases to storage
-            if( i == self.epochs):
+            if( i == self.iterations):
                 np.save( "weights_ih", self.weights_ih)
                 np.save( "weights_ho", self.weights_ho)
                 np.save( "bias_h", self.bias_h)
