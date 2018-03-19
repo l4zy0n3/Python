@@ -1,67 +1,85 @@
 import numpy as np
-import time
-class neuron:
-    def sigmoid( self, x, deriv = False):
-        #return (1/ (1 + np.exp( -1 * x))) if not deriv else (self.sigmoid(x)*(1-self.sigmoid(x)) #sigmoid for now
-        return (np.tanh(x)) if not deriv else 1-np.tanh(x)*np.tanh(x)
-        #return (-1.0 if x<0.0 else 1.0)
-
-    def __init__(self, inp, hid, out):
+import time, pprint
+from os import path
+class NeuralNetwork:
+    def sigmoid( self, x, deriv = False, alt = True):
+        if alt:
+            return (np.tanh(x)) if not deriv else 1-np.tanh(x)*np.tanh(x)
+        return (1/(1+np.exp(x))) if not deriv else self.sigmoid(x)*(1-self.sigmoid(x))
+    
+    def __init__(self, inp, hid, out, lr = 0.1, batches = 5000, epochs = 100):
+        #for consistent testing
         np.random.seed( int(time.time()))
+        #init 
         self.inp = inp
         self.hid = hid
         self.out = out
-        self.weights_ih = np.random.rand( self.hid, self.inp)
-        #print("weights", self.weights_ih)
-        self.weights_ho = np.random.rand( self.out, self.hid)
-        #print("weights", self.weights_ho)
-        self.bias_h = np.random.rand( self.hid, 1)
-        #print("biases_h", self.bias_h)
-        self.bias_o = np.random.rand( self.out, 1)
-        #print("biases_o", self.bias_o)
-
+        self.lr = lr
+        self.batches = batches
+        self.epochs = epochs
+        #load pretrained weights and biases
+        self.weights_ih = np.load("weights_ih.npy") if path.isfile("weights_ih.npy") else np.random.rand( self.hid, self.inp)
+        self.weights_ho = np.load("weights_ho.npy") if path.isfile("weights_ho.npy") else np.random.rand( self.out, self.hid)
+        self.bias_h = np.load( "bias_h.npy") if path.isfile("bias_h.npy") else np.random.rand( self.hid, 1)
+        self.bias_o = np.load( "bias_o.npy") if path.isfile("bias_o.npy") else np.random.rand( self.out, 1)
+        
     def guess( self, inputs):
         self.inputs = np.reshape( inputs ,[ len( inputs), 1])
-        #print("inputs",inputs)
         self.hidden = np.dot( self.weights_ih, self.inputs)
         self.hidden_values = self.sigmoid( self.hidden + self.bias_h)
-        self.outputs =  np.dot( self.weights_ho, self.hidden_values)
-        self.output_values = self.sigmoid( self.outputs + self.bias_o)
-        #print( "hidden ", self.hidden_values, "weights h_o", self.weights_ho, "after mul",  np.dot( self.weights_ho, self.hidden_values))
-#        print(self.hidden_values,self.sigmoid(self.hidden_values))
+        self.output =  np.dot( self.weights_ho, self.hidden_values)
+        self.output_values = self.sigmoid( self.output + self.bias_o)
         return self.output_values
         
     def train( self, inputs, outputs):
-        self.lr = 0.1
-        for i in range(50000):
-            index = np.random.randint(4)
-            guess = self.guess( inputs[index])
-            inp = np.reshape( inputs[index] ,[ len(inputs[index]), 1])
-            target = outputs[index]
+        print("Started training...")
+        for i in range(self.epochs):
+            print("{0}% complete".format((i+1)*100/self.epochs))
+            for j in range( 1, self.batches + 1):
+                index = np.random.randint(4)
+                guess = self.guess( inputs[index])
+                inp = np.reshape( inputs[index] ,[ len(inputs[index]), 1])
+                target = outputs[index]
 
-            #Calculate output gradients and deltas
-            output_errors = ( target - guess)
-            ho_gradients = np.multiply( self.sigmoid( self.outputs, deriv = True), output_errors)
-            ho_gradients = np.multiply( ho_gradients, self.lr)
-            ho_deltas = np.dot( ho_gradients, np.transpose(self.hidden_values))
-            self.weights_ho += ho_deltas
-            self.bias_o += ho_gradients
-            #print( self.weights_ho)
-
-            #Calculate hidden gradients and deltas
-            hidden_errors = np.dot( np.transpose(self.weights_ho), ho_gradients)#output_errors)
-            #print( hidden_errors)
-            #self.hidden is used as bias is not applied
-            ih_gradients = self.sigmoid( self.hidden_values, deriv = True) #self.hidden_values can be replaced by self.hidden
-            #print( ih_gradients)
-            ih_gradients = np.multiply( ih_gradients, hidden_errors)
-            ih_gradients = np.multiply( ih_gradients, self.lr)
-            #print(ih_gradients)
-            #print(ih_gradients, np.transpose(inp))
-            ih_deltas = np.dot( ih_gradients, np.transpose(inp))
-            self.weights_ih += ih_deltas
-            self.bias_h += ih_gradients
-        #    print( self.weights_ih)
-
+                #Calculate output gradients and deltas
+                output_errors = ( target - guess)
+                ho_gradients = self.sigmoid( self.output, deriv = True, alt = False)
+                ho_gradients = np.multiply( ho_gradients, output_errors)
+                ho_gradients = np.multiply( ho_gradients, self.lr)
+                ho_deltas = np.dot( ho_gradients, np.transpose(self.hidden_values))
+                self.weights_ho += ho_deltas
+                self.bias_o += ho_gradients
+        
+                #Calculate hidden gradients and deltas
+                hidden_errors = np.dot( np.transpose(self.weights_ho), ho_gradients)
+                ih_gradients = self.sigmoid( self.hidden, deriv = True, alt = True)
+                ih_gradients = np.multiply( ih_gradients, hidden_errors)
+                ih_gradients = np.multiply( ih_gradients, self.lr)
+                ih_deltas = np.dot( ih_gradients, np.transpose(inp))
+                self.weights_ih += ih_deltas
+                self.bias_h += ih_gradients
             
+                #printing status on the console
+                if(j%1000 == 0):
+                    print("\n\nepoch #", i)
+                    print("\nBatch {0} of {1}".format(j,self.batches))
+                    print("\n\tInput -> Hidden Weights\n\t-----------------------\n")
+                    pprint.pprint( self.weights_ih)
+                    print("\n\tHidden Biases\n\t---------------\n")
+                    pprint.pprint( self.bias_h)
+                    print("\n\tHidden -> Outputs Weights\n\t-------------------------\n")
+                    pprint.pprint( self.weights_ho)
+                    print("\n\tOutput Biases\n\t---------------\n")
+                    pprint.pprint( self.bias_o)
+                    print("\n******************************************************************************\n")
+                    print("guesses")
+                    for x in inputs:
+                        print(self.guess(x))
+
+        #saving weights and biases to storage
+        np.save( "weights_ih", self.weights_ih)
+        np.save( "weights_ho", self.weights_ho)
+        np.save( "bias_h", self.bias_h)
+        np.save( "bias_o", self.bias_o)
+
         print("Done")
