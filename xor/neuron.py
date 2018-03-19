@@ -7,7 +7,7 @@ class NeuralNetwork:
             return (np.tanh(x)) if not deriv else 1-np.tanh(x)*np.tanh(x)
         return (1/(1+np.exp(x))) if not deriv else self.sigmoid(x)*(1-self.sigmoid(x))
     
-    def __init__(self, inp, hid, out, lr = 0.25, iterations = 50000, epochs = 100):
+    def __init__(self, inp, hid, out, lr = 0.1, iterations = 50000, epochs = 100):
         #for consistent testing
         np.random.seed( int(time.time()))
         #init 
@@ -35,7 +35,7 @@ class NeuralNetwork:
         print("Started training...")
         for i in range(self.epochs):
             print("{0}% complete".format((i+1)*100/self.epochs))
-            for i in range( 1, self.iterations + 1):
+            for j in range( 1, self.iterations + 1):
                 index = np.random.randint(4)
                 guess = self.guess( inputs[index])
                 inp = np.reshape( inputs[index] ,[ len(inputs[index]), 1])
@@ -60,9 +60,9 @@ class NeuralNetwork:
                 self.bias_h += ih_gradients
             
                 #printing status on the console
-                '''if( i%10000 == 0):
-                    print( "******************************************************************************"\
-                    "\n\niterationsation #", i)
+                if(j%10000 == 0):
+                    print("\n\nepoch #", i)
+                    print("\nIteration {0} of {1}".format(j,self.iterations))
                     print("\n\tInput -> Hidden Weights\n\t-----------------------\n")
                     pprint.pprint( self.weights_ih)
                     print("\n\tHidden Biases\n\t---------------\n")
@@ -72,9 +72,12 @@ class NeuralNetwork:
                     print("\n\tOutput Biases\n\t---------------\n")
                     pprint.pprint( self.bias_o)
                     print("\n******************************************************************************\n")
-                '''
+                    print("guesses")
+                    for x in inputs:
+                        print(self.guess(x))
+
                 #saving weights and biases to storage
-                if( i == self.iterations):
+                if( j == self.iterations):
                     np.save( "weights_ih", self.weights_ih)
                     np.save( "weights_ho", self.weights_ho)
                     np.save( "bias_h", self.bias_h)
