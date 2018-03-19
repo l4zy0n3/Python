@@ -7,7 +7,7 @@ class NeuralNetwork:
             return (np.tanh(x)) if not deriv else 1-np.tanh(x)*np.tanh(x)
         return (1/(1+np.exp(x))) if not deriv else self.sigmoid(x)*(1-self.sigmoid(x))
     
-    def __init__(self, inp, hid, out, lr = 0.1, iterations = 50000, epochs = 100):
+    def __init__(self, inp, hid, out, lr = 0.1, batches = 5000, epochs = 100):
         #for consistent testing
         np.random.seed( int(time.time()))
         #init 
@@ -15,7 +15,7 @@ class NeuralNetwork:
         self.hid = hid
         self.out = out
         self.lr = lr
-        self.iterations = iterations
+        self.batches = batches
         self.epochs = epochs
         #load pretrained weights and biases
         self.weights_ih = np.load("weights_ih.npy") if path.isfile("weights_ih.npy") else np.random.rand( self.hid, self.inp)
@@ -35,7 +35,7 @@ class NeuralNetwork:
         print("Started training...")
         for i in range(self.epochs):
             print("{0}% complete".format((i+1)*100/self.epochs))
-            for j in range( 1, self.iterations + 1):
+            for j in range( 1, self.batches + 1):
                 index = np.random.randint(4)
                 guess = self.guess( inputs[index])
                 inp = np.reshape( inputs[index] ,[ len(inputs[index]), 1])
@@ -43,7 +43,7 @@ class NeuralNetwork:
 
                 #Calculate output gradients and deltas
                 output_errors = ( target - guess)
-                ho_gradients = self.sigmoid( self.output, deriv = True)
+                ho_gradients = self.sigmoid( self.output, deriv = True, alt = False)
                 ho_gradients = np.multiply( ho_gradients, output_errors)
                 ho_gradients = np.multiply( ho_gradients, self.lr)
                 ho_deltas = np.dot( ho_gradients, np.transpose(self.hidden_values))
@@ -52,7 +52,7 @@ class NeuralNetwork:
         
                 #Calculate hidden gradients and deltas
                 hidden_errors = np.dot( np.transpose(self.weights_ho), ho_gradients)
-                ih_gradients = self.sigmoid( self.hidden, deriv = True)
+                ih_gradients = self.sigmoid( self.hidden, deriv = True, alt = True)
                 ih_gradients = np.multiply( ih_gradients, hidden_errors)
                 ih_gradients = np.multiply( ih_gradients, self.lr)
                 ih_deltas = np.dot( ih_gradients, np.transpose(inp))
@@ -60,9 +60,9 @@ class NeuralNetwork:
                 self.bias_h += ih_gradients
             
                 #printing status on the console
-                if(j%10000 == 0):
+                if(j%1000 == 0):
                     print("\n\nepoch #", i)
-                    print("\nIteration {0} of {1}".format(j,self.iterations))
+                    print("\nBatch {0} of {1}".format(j,self.batches))
                     print("\n\tInput -> Hidden Weights\n\t-----------------------\n")
                     pprint.pprint( self.weights_ih)
                     print("\n\tHidden Biases\n\t---------------\n")
@@ -76,11 +76,10 @@ class NeuralNetwork:
                     for x in inputs:
                         print(self.guess(x))
 
-                #saving weights and biases to storage
-                if( j == self.iterations):
-                    np.save( "weights_ih", self.weights_ih)
-                    np.save( "weights_ho", self.weights_ho)
-                    np.save( "bias_h", self.bias_h)
-                    np.save( "bias_o", self.bias_o)
+        #saving weights and biases to storage
+        np.save( "weights_ih", self.weights_ih)
+        np.save( "weights_ho", self.weights_ho)
+        np.save( "bias_h", self.bias_h)
+        np.save( "bias_o", self.bias_o)
 
         print("Done")

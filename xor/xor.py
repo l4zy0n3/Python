@@ -25,7 +25,7 @@ xor_io = [[[ 0, 0],
              1,
              1,
              0   ]]
-nn = NeuralNetwork( 2, 4, 1)
+nn = NeuralNetwork( 2, 8, 1)
 #uncomment the next line to train
 nn.train( xor_io[0], xor_io[1]) 
 #print("XOR using MLP and Backprop...")
