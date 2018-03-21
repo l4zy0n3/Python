@@ -7,7 +7,7 @@ class NeuralNetwork:
             return (np.tanh(x)) if not deriv else 1-np.tanh(x)*np.tanh(x)
         return (1/(1+np.exp(x))) if not deriv else self.sigmoid(x)*(1-self.sigmoid(x))
     
-    def __init__(self, inp, hid, out, lr = 0.1, batches = 5000, epochs = 100):
+    def __init__(self, inp, hid, out, lr = 0.1, batches = 5000, epochs = 1000):
         #for consistent testing
         np.random.seed( int(time.time()))
         #init 
