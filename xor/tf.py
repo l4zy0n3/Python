@@ -23,9 +23,9 @@ else:
     model.add(Dense(2, input_dim=2))    #2 hidden neurons and 2 input neurons
     model.add(Activation('tanh'))       #tanh as activation for hidden layer
     model.add(Dense(1))                 #1 output neuron
-    model.add(Activation('sigmoid'))    #sigmoid as activation for output layer
-    sgd = SGD(lr=0.67,momentum=0.02)    #Stochastic gradient descent               
-    model.compile(loss='binary_crossentropy', optimizer=sgd)
+    model.add(Activation('tanh'))    #sigmoid as activation for output layer
+    sgd = SGD(lr=0.45)    #Stochastic gradient descent               
+    model.compile(loss='mse', optimizer=sgd)
     model.fit(X, y, batch_size=1, nb_epoch=1000)
     model.save('xor.h5')
 
